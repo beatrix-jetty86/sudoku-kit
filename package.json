@@ -1,0 +1,23 @@
+{
+  "name": "sudoku-kit",
+  "version": "0.1.0",
+  "description": "A small TypeScript library and CLI for parsing, validating, and solving sudoku boards.",
+  "type": "module",
+  "main": "dist/src/sudoku.js",
+  "types": "dist/src/sudoku.d.ts",
+  "bin": {
+    "sudoku-kit": "dist/src/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc && node --test dist/test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  },
+  "license": "MIT",
+  "author": "beatrix-jetty86"
+}
