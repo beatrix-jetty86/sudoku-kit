@@ -6,6 +6,8 @@ import {
   findConflicts,
   solve,
   isComplete,
+  countSolutions,
+  hasUniqueSolution,
   SudokuFormatError,
 } from "../src/sudoku.js";
 
@@ -131,4 +133,49 @@ test("solve: an empty board is solvable and internally consistent", () => {
   assert.ok(solved);
   assert.ok(isComplete(solved!));
   assert.equal(findConflicts(solved!).length, 0);
+});
+
+test("countSolutions: table of puzzles by solution count", async (t) => {
+  const cases: Array<{ name: string; input: string; limit?: number; expect: number }> = [
+    { name: "well-formed puzzle has exactly one solution", input: EASY_PUZZLE, expect: 1 },
+    { name: "solved board counts as one solution", input: EASY_SOLUTION, expect: 1 },
+    {
+      name: "conflicting givens have zero solutions",
+      input: (() => {
+        const b = parseBoard(EASY_PUZZLE);
+        b[0][1] = b[0][0];
+        return serializeBoard(b);
+      })(),
+      expect: 0,
+    },
+    {
+      name: "empty board search stops at the limit",
+      input: ".".repeat(81),
+      limit: 2,
+      expect: 2,
+    },
+    {
+      name: "a raised limit is respected",
+      input: ".".repeat(81),
+      limit: 5,
+      expect: 5,
+    },
+  ];
+
+  for (const c of cases) {
+    await t.test(c.name, () => {
+      const board = parseBoard(c.input);
+      assert.equal(countSolutions(board, c.limit), c.expect);
+    });
+  }
+});
+
+test("countSolutions: rejects a limit below one", () => {
+  const board = parseBoard(EASY_PUZZLE);
+  assert.throws(() => countSolutions(board, 0), RangeError);
+});
+
+test("hasUniqueSolution: true for a puzzle with one completion, false for an empty board", () => {
+  assert.equal(hasUniqueSolution(parseBoard(EASY_PUZZLE)), true);
+  assert.equal(hasUniqueSolution(parseBoard(".".repeat(81))), false);
 });

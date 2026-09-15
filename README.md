@@ -64,6 +64,12 @@ column, or box with a duplicate value, which is the case a solver can't
 recover from on its own. `solve` returns a filled-in copy of the board, or
 `null` if it's unsolvable.
 
+`countSolutions(board, limit = 2)` counts completions of the board,
+stopping as soon as it hits `limit` rather than exhausting the search
+space, and `hasUniqueSolution(board)` is a thin wrapper over it. This is
+what tells a real puzzle (one solution) apart from an under-constrained
+grid (many) or a contradictory one (zero).
+
 ## CLI usage
 
 Build first, then run against a file or stdin:
@@ -95,5 +101,5 @@ empty board that has to be solved from scratch.
 
 ## Status
 
-Early skeleton: parsing, conflict detection, and a backtracking solver.
-No puzzle generator yet.
+Early skeleton: parsing, conflict detection, a backtracking solver, and
+solution counting for uniqueness checks. No puzzle generator yet.

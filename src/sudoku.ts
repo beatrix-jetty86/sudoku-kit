@@ -150,6 +150,48 @@ function findEmptyCell(board: Board): [number, number] | null {
   return null;
 }
 
+interface CountState {
+  count: number;
+  limit: number;
+}
+
+function countBacktrack(board: Board, state: CountState): void {
+  if (state.count >= state.limit) return;
+  const spot = findEmptyCell(board);
+  if (!spot) {
+    state.count++;
+    return;
+  }
+  const [row, col] = spot;
+  for (let value = 1; value <= SIZE; value++) {
+    if (state.count >= state.limit) return;
+    if (canPlace(board, row, col, value)) {
+      board[row][col] = value;
+      countBacktrack(board, state);
+      board[row][col] = 0;
+    }
+  }
+}
+
+/**
+ * Counts completions of the board, stopping as soon as `limit` is reached
+ * so a puzzle with many solutions doesn't cost a full search. The default
+ * limit of 2 is exactly what's needed to tell "unique" from "not unique"
+ * without counting the rest.
+ */
+export function countSolutions(board: Board, limit = 2): number {
+  if (limit < 1) throw new RangeError("limit must be at least 1");
+  const working = cloneBoard(board);
+  if (findConflicts(working).length > 0) return 0;
+  const state: CountState = { count: 0, limit };
+  countBacktrack(working, state);
+  return state.count;
+}
+
+export function hasUniqueSolution(board: Board): boolean {
+  return countSolutions(board, 2) === 1;
+}
+
 function canPlace(board: Board, row: number, col: number, value: number): boolean {
   for (let i = 0; i < SIZE; i++) {
     if (board[row][i] === value) return false;
