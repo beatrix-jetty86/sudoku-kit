@@ -8,6 +8,8 @@ import {
   isComplete,
   countSolutions,
   hasUniqueSolution,
+  generateSolvedBoard,
+  generatePuzzle,
   SudokuFormatError,
 } from "../src/sudoku.js";
 
@@ -178,4 +180,34 @@ test("countSolutions: rejects a limit below one", () => {
 test("hasUniqueSolution: true for a puzzle with one completion, false for an empty board", () => {
   assert.equal(hasUniqueSolution(parseBoard(EASY_PUZZLE)), true);
   assert.equal(hasUniqueSolution(parseBoard(".".repeat(81))), false);
+});
+
+test("generateSolvedBoard: produces a complete, conflict-free board", () => {
+  const board = generateSolvedBoard();
+  assert.ok(isComplete(board));
+  assert.equal(findConflicts(board).length, 0);
+});
+
+test("generateSolvedBoard: two calls don't produce the same board", () => {
+  const a = serializeBoard(generateSolvedBoard());
+  const b = serializeBoard(generateSolvedBoard());
+  assert.notEqual(a, b);
+});
+
+test("generatePuzzle: default puzzle has a unique solution and at least 17 givens", () => {
+  const board = generatePuzzle();
+  assert.equal(hasUniqueSolution(board), true);
+  const givens = board.flat().filter((v) => v !== 0).length;
+  assert.ok(givens >= 17, `expected at least 17 givens, got ${givens}`);
+});
+
+test("generatePuzzle: raising minClues raises the floor on givens", () => {
+  const board = generatePuzzle(40);
+  const givens = board.flat().filter((v) => v !== 0).length;
+  assert.ok(givens >= 40, `expected at least 40 givens, got ${givens}`);
+  assert.equal(hasUniqueSolution(board), true);
+});
+
+test("generatePuzzle: rejects a minClues below 17", () => {
+  assert.throws(() => generatePuzzle(16), RangeError);
 });

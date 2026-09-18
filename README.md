@@ -70,6 +70,13 @@ space, and `hasUniqueSolution(board)` is a thin wrapper over it. This is
 what tells a real puzzle (one solution) apart from an under-constrained
 grid (many) or a contradictory one (zero).
 
+`generateSolvedBoard()` returns a random, fully filled, conflict-free
+board. `generatePuzzle(minClues = 17)` builds on it: it fills a board, then
+removes givens one at a time in random order, undoing any removal that
+would leave more than one solution, until it either runs out of safe
+removals or hits `minClues`. 17 is the fewest givens known to determine a
+sudoku uniquely, so that's the default floor.
+
 ## CLI usage
 
 Build first, then run against a file or stdin:
@@ -80,10 +87,14 @@ node dist/src/cli.js show puzzle.txt
 node dist/src/cli.js check puzzle.txt
 node dist/src/cli.js solve puzzle.txt
 cat puzzle.txt | node dist/src/cli.js solve
+node dist/src/cli.js generate
+node dist/src/cli.js generate 30
 ```
 
 `show` pretty-prints the board, `check` lists any conflicting givens, and
 `solve` prints a completed board or exits non-zero with "no solution".
+`generate` prints a fresh puzzle with a unique solution; the optional
+argument sets the minimum number of givens (default and floor: 17).
 
 ## Testing
 
@@ -101,5 +112,6 @@ empty board that has to be solved from scratch.
 
 ## Status
 
-Early skeleton: parsing, conflict detection, a backtracking solver, and
-solution counting for uniqueness checks. No puzzle generator yet.
+Early skeleton: parsing, conflict detection, a backtracking solver,
+solution counting for uniqueness checks, and a puzzle generator. No
+difficulty rating yet, and the CLI only handles one puzzle per run.

@@ -1,6 +1,13 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
-import { parseBoard, formatBoard, findConflicts, solve, SudokuFormatError } from "./sudoku.js";
+import {
+  parseBoard,
+  formatBoard,
+  findConflicts,
+  solve,
+  generatePuzzle,
+  SudokuFormatError,
+} from "./sudoku.js";
 
 function readInput(source: string | undefined): string {
   if (source && source !== "-") {
@@ -11,7 +18,9 @@ function readInput(source: string | undefined): string {
 
 function printUsage(): void {
   console.error("usage: sudoku-kit <show|check|solve> [file]");
+  console.error("       sudoku-kit generate [minClues]");
   console.error("  reads an 81-character puzzle (. or 0 for blanks) from a file or stdin");
+  console.error("  generate prints a new puzzle with a unique solution (minClues defaults to 17)");
 }
 
 function main(argv: string[]): number {
@@ -21,9 +30,19 @@ function main(argv: string[]): number {
     return command ? 0 : 1;
   }
 
-  if (!["show", "check", "solve"].includes(command)) {
+  if (!["show", "check", "solve", "generate"].includes(command)) {
     printUsage();
     return 1;
+  }
+
+  if (command === "generate") {
+    const minClues = source === undefined ? 17 : Number(source);
+    if (!Number.isInteger(minClues) || minClues < 17) {
+      console.error("minClues must be an integer of at least 17");
+      return 1;
+    }
+    console.log(formatBoard(generatePuzzle(minClues)));
+    return 0;
   }
 
   let raw: string;

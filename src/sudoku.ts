@@ -192,6 +192,76 @@ export function hasUniqueSolution(board: Board): boolean {
   return countSolutions(board, 2) === 1;
 }
 
+function shuffledValues(): number[] {
+  const values = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  for (let i = values.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [values[i], values[j]] = [values[j], values[i]];
+  }
+  return values;
+}
+
+function fillRandomly(board: Board): boolean {
+  const spot = findEmptyCell(board);
+  if (!spot) return true;
+  const [row, col] = spot;
+  for (const value of shuffledValues()) {
+    if (canPlace(board, row, col, value)) {
+      board[row][col] = value;
+      if (fillRandomly(board)) return true;
+      board[row][col] = 0;
+    }
+  }
+  return false;
+}
+
+/**
+ * Produces a random, fully filled, internally consistent board by running
+ * the same backtracking search as `solve` against an empty board, but with
+ * values tried in random order instead of ascending. Useful on its own, and
+ * as the starting point for `generatePuzzle`.
+ */
+export function generateSolvedBoard(): Board {
+  const board: Board = Array.from({ length: SIZE }, () => new Array(SIZE).fill(0));
+  fillRandomly(board);
+  return board;
+}
+
+/**
+ * Builds a puzzle by filling a random solved board, then knocking out
+ * givens one at a time in random order, undoing any removal that would
+ * leave more than one solution. Stops once no remaining cell can be removed
+ * without breaking uniqueness, or once `minClues` is reached, whichever
+ * comes first. 17 is the smallest number of givens known to admit a unique
+ * solution, so that's the floor.
+ */
+export function generatePuzzle(minClues = 17): Board {
+  if (minClues < 17) throw new RangeError("minClues must be at least 17");
+  const board = generateSolvedBoard();
+
+  const positions: Array<[number, number]> = [];
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) positions.push([r, c]);
+  }
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+
+  let clues = SIZE * SIZE;
+  for (const [row, col] of positions) {
+    if (clues <= minClues) break;
+    const saved = board[row][col];
+    board[row][col] = 0;
+    if (hasUniqueSolution(board)) {
+      clues--;
+    } else {
+      board[row][col] = saved;
+    }
+  }
+  return board;
+}
+
 function canPlace(board: Board, row: number, col: number, value: number): boolean {
   for (let i = 0; i < SIZE; i++) {
     if (board[row][i] === value) return false;
